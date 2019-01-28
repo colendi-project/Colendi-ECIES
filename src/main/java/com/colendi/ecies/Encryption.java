@@ -1,8 +1,5 @@
 package com.colendi.ecies;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.*;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
@@ -26,25 +23,19 @@ import java.math.BigInteger;
 import java.security.*;
 
 
-@SpringBootApplication
-@RestController
-public class EncryptionApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(EncryptionApplication.class, args);
-	}
+public class Encryption {
 
 	private static final String CURVE_NAME = "secp256k1";
 	private static final String PROVIDER = "BC";
 
 	private static ECDomainParameters CURVE;
 
-	@RequestMapping(value = "/encrypt", method = RequestMethod.GET)
-	public EncryptedResult getEncryptedResult(@RequestParam("word") String plainText, @RequestParam("pubKey") String pubKey) {
+	public Encryption() {
 		Security.addProvider(new BouncyCastleProvider());
-
 		curveInit();
+	}
 
+	public EncryptedResult encryptWithPublicKey(String plainText, String pubKey) {
 		ECPoint ecPoint = CURVE.getCurve().decodePoint(BigIntegers.asUnsignedByteArray(new BigInteger(pubKey, 16)));
 
 		try {
@@ -54,18 +45,13 @@ public class EncryptionApplication {
 		}
 	}
 
-	@RequestMapping(value = "/decrypt", method = RequestMethod.POST)
-	public String getDecryptedResult(@RequestBody EncryptedResultForm formData) {
-		Security.addProvider((new BouncyCastleProvider()));
-
-		curveInit();
-
+	public String decryptWithPrivateKey(EncryptedResultForm formData) {
 		BigInteger privateKey = new BigInteger(formData.getPrivateKey(), 16);
 
 		return decrypt(privateKey, formData.getIv(), formData.getEphemPublicKey(), formData.getCiphertext(), formData.getMac());
 	}
 
-	public static void curveInit(){
+	private static void curveInit(){
 		try {
 			Class.forName("org.bouncycastle.asn1.sec.SECNamedCurves");
 		} catch (ClassNotFoundException e) {
@@ -77,7 +63,7 @@ public class EncryptionApplication {
 
 	}
 
-	public EncryptedResult encrypt(ECPoint toPub, String plainText) throws Exception {
+	private EncryptedResult encrypt(ECPoint toPub, String plainText) throws Exception {
 		ECKeyPairGenerator eGen = new ECKeyPairGenerator();
 		SecureRandom random = new SecureRandom();
 		KeyGenerationParameters gParam = new ECKeyGenerationParameters(CURVE, random);
@@ -110,7 +96,7 @@ public class EncryptionApplication {
 		return new EncryptedResult(ephemPubString, ivString, macString, encryptedText);
 	}
 
-	public static BigInteger calculateKeyAgreement(BigInteger privKey, ECPoint theirPubKey) {
+	private static BigInteger calculateKeyAgreement(BigInteger privKey, ECPoint theirPubKey) {
 
 		ECPrivateKeyParameters privKeyP =
 				new ECPrivateKeyParameters(privKey, CURVE);
@@ -155,7 +141,7 @@ public class EncryptionApplication {
 
 	}
 
-	public static String decrypt(BigInteger privKey, String IV, String ephemPublicKey, String ciphertext, String mac) {
+	private static String decrypt(BigInteger privKey, String IV, String ephemPublicKey, String ciphertext, String mac) {
 
 		try {
 			ECPoint ecPoint = CURVE.getCurve().decodePoint(BigIntegers.asUnsignedByteArray(new BigInteger(ephemPublicKey, 16)));
@@ -181,8 +167,6 @@ public class EncryptionApplication {
 			return "";
 		}
 	}
-
-
 
 	private static String decryptAES256CBC(byte [] ciphertext, String encKey,  byte[] IV) throws Exception {
 		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
@@ -210,7 +194,5 @@ public class EncryptionApplication {
 
 		return new MacAesPair(macKey, encKeyAES);
 	}
-
-
 }
 
