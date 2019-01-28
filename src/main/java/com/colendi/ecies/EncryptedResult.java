@@ -2,27 +2,19 @@ package com.colendi.ecies;
 
 public class EncryptedResult {
 
-    public EncryptedResult(String privateKey, String ephemPublicKey, String iv, String mac, String ciphertext) {
-        this.privateKey = privateKey;
+    public EncryptedResult() { }
+
+    public EncryptedResult(String ephemPublicKey, String iv, String mac, String ciphertext) {
         this.ephemPublicKey = ephemPublicKey;
         this.iv = iv;
         this.mac = mac;
         this.ciphertext = ciphertext;
     }
 
-    private String privateKey;
-    private String ephemPublicKey;
-    private String iv;
-    private String mac;
-    private String ciphertext;
-
-    public String getPrivateKey() {
-        return privateKey;
-    }
-
-    public void setPrivateKey(String privateKey) {
-        this.privateKey = privateKey;
-    }
+    protected String ephemPublicKey;
+    protected String iv;
+    protected String mac;
+    protected String ciphertext;
 
     public String getEphemPublicKey() {
         return ephemPublicKey;
