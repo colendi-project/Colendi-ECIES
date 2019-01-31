@@ -23,6 +23,8 @@ public class EncryptionApplicationTests {
 		formData.setIv(encryptedResult.getIv());
 		formData.setMac(encryptedResult.getMac());
 
+		System.out.println(formData.toString());
+
 	    String result = encryption.decryptWithPrivateKey(formData);
         assert(result.equals(message));
 	}

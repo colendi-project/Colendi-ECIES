@@ -1,18 +1,17 @@
 package com.colendi.ecies;
 
-import org.bouncycastle.asn1.sec.SECNamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
-import org.bouncycastle.crypto.KeyGenerationParameters;
-import org.bouncycastle.crypto.agreement.ECDHBasicAgreement;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.generators.ECKeyPairGenerator;
-import org.bouncycastle.crypto.macs.HMac;
-import org.bouncycastle.crypto.params.*;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.util.BigIntegers;
-import org.bouncycastle.util.encoders.Hex;
+import org.spongycastle.asn1.sec.SECNamedCurves;
+import org.spongycastle.asn1.x9.X9ECParameters;
+import org.spongycastle.crypto.AsymmetricCipherKeyPair;
+import org.spongycastle.crypto.KeyGenerationParameters;
+import org.spongycastle.crypto.agreement.ECDHBasicAgreement;
+import org.spongycastle.crypto.digests.SHA256Digest;
+import org.spongycastle.crypto.generators.ECKeyPairGenerator;
+import org.spongycastle.crypto.macs.HMac;
+import org.spongycastle.crypto.params.*;
+import org.spongycastle.math.ec.ECPoint;
+import org.spongycastle.util.BigIntegers;
+import org.spongycastle.util.encoders.Hex;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -20,18 +19,20 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.*;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.security.Security;
 
 
 public class Encryption {
 
 	private static final String CURVE_NAME = "secp256k1";
-	private static final String PROVIDER = "BC";
+	private static final String PROVIDER = "SC";
 
 	private static ECDomainParameters CURVE;
 
 	public Encryption() {
-		Security.addProvider(new BouncyCastleProvider());
+		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 		curveInit();
 	}
 
@@ -53,7 +54,7 @@ public class Encryption {
 
 	private static void curveInit(){
 		try {
-			Class.forName("org.bouncycastle.asn1.sec.SECNamedCurves");
+			Class.forName("org.spongycastle.asn1.sec.SECNamedCurves");
 		} catch (ClassNotFoundException e) {
 			throw new IllegalStateException(
 					"BouncyCastle is not available on the classpath, see https://www.bouncycastle.org/latest_releases.html");
@@ -110,7 +111,7 @@ public class Encryption {
 	private static byte [] encryptAES256CBC(String plaintext, String encKey,  byte[] IV) throws Exception {
 
 		SecretKeySpec secretKeySpec = new SecretKeySpec(Hex.decode(encKey), "AES");
-		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, new IvParameterSpec(IV));
 		return cipher.doFinal(plaintext.getBytes());
 	}
@@ -169,7 +170,7 @@ public class Encryption {
 	}
 
 	private static String decryptAES256CBC(byte [] ciphertext, String encKey,  byte[] IV) throws Exception {
-		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		SecretKeySpec secretKeySpec = new SecretKeySpec(Hex.decode(encKey), "AES");
 		cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(IV));
 		return new String(cipher.doFinal(ciphertext));

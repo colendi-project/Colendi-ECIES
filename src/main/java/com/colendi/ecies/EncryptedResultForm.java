@@ -20,4 +20,14 @@ public class EncryptedResultForm extends EncryptedResult {
         this.privateKey = privateKey;
     }
 
+    @Override
+    public String toString() {
+        return "EncryptedResultForm{" +
+                "privateKey='" + privateKey + '\'' +
+                ", ephemPublicKey='" + ephemPublicKey + '\'' +
+                ", iv='" + iv + '\'' +
+                ", mac='" + mac + '\'' +
+                ", ciphertext='" + ciphertext + '\'' +
+                '}';
+    }
 }
